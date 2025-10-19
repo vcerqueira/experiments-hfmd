@@ -1,6 +1,6 @@
 from pathlib import Path
 
-DATA_FILE_PATH = Path('assets/Malaysia HFMD Data 2009-2019.xlsx')
+DATA_FILE_PATH = Path('assets/dataset.xlsx')
 RESULTS_FILE_PATH = Path('assets/results')
 TEST_SIZE = 365 * 2  # TWO YEARS
 HORIZON = 14  # two weeks

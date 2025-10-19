@@ -35,4 +35,4 @@ cv = mlf.cross_validation(df=df,
 
 cv = cv.reset_index()
 
-cv.to_csv(f'/Users/vcerq/Desktop/cv_hfmd_mlf.csv', index=False)
+cv.to_csv(f'{RESULTS_FILE_PATH}/cv_hfmd_mlf.csv', index=False)
