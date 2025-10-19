@@ -1,18 +1,36 @@
 from pprint import pprint
 import re
-import pandas as pd
 
+import pandas as pd
 from neuralforecast.losses.numpy import smape
 
-from codebase.data_reader import DataReader
+from src.data_reader import DataReader
 
-cv_cls = pd.read_csv('assets/results/cv_classical.csv').drop(columns=['index'])
-cv_nf = pd.read_csv('assets/results/cv_nf.csv')
-cv_ml = pd.read_csv('assets/results/cv_mlf.csv')
+cv_cls1 = pd.read_csv('assets/results/cv_hfmd_cls1.csv').drop(columns=['index'])
+cv_cls2 = pd.read_csv('assets/results/cv_hfmd_cls2.csv').drop(columns=['index','RWD'])
+
+cv_nf1 = pd.read_csv('assets/results/cv_hfmd_nf_poisson.csv')
+cv_nf2 = pd.read_csv('assets/results/cv_hfmd_nf_mae.csv')
+cv_nf3 = pd.read_csv('assets/results/cv_hfmd_nf_tw.csv')
+cv_nf1 = cv_nf1.drop(columns=[col for col in cv_nf1.columns if '-hi-' in col or '-lo-' in col])
+cv_nf2 = cv_nf2.drop(columns=[col for col in cv_nf2.columns if '-hi-' in col or '-lo-' in col])
+cv_nf3 = cv_nf3.drop(columns=[col for col in cv_nf3.columns if '-hi-' in col or '-lo-' in col])
+
+cv_ml = pd.read_csv('assets/results/cv_hfmd_mlf.csv')
+
+
+cv = cv_cls1.merge(cv_cls2.drop(columns=['y']), on=['unique_id', 'ds', 'cutoff'])
+cv = cv.merge(cv_nf1.drop(columns=['y']), on=['unique_id', 'ds', 'cutoff'])
+cv = cv.merge(cv_nf2.drop(columns=['y']), on=['unique_id', 'ds', 'cutoff'])
+cv = cv.merge(cv_nf3.drop(columns=['y']), on=['unique_id', 'ds', 'cutoff'])
+cv = cv.merge(cv_ml.drop(columns=['y', 'index']), on=['unique_id', 'ds', 'cutoff'])
+
+
 
 cv = cv_nf.merge(cv_cls.drop(columns=['y']), on=['unique_id', 'ds', 'cutoff'])
 cv = cv.merge(cv_ml.drop(columns=['y', 'index']), on=['unique_id', 'ds', 'cutoff'])
 cv['ds'] = pd.to_datetime(cv['ds'])
+
 cv = cv.drop(columns=['LSTM(P)', 'NHITS(P)', 'TFT(P)',
                       'LSTM(T)', 'NHITS(T)', 'TFT(T)',
                       'LSTM(M)', 'NHITS(M)', 'TFT(M)',
