@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import plotnine as p9
+
 DATA_FILE_PATH = Path('assets/dataset.xlsx')
 RESULTS_FILE_PATH = Path('assets/results')
 TEST_SIZE = 365 * 2  # TWO YEARS
@@ -8,6 +10,17 @@ N_LAGS = 14  # two weeks
 PERIOD = 365  # 1 year ... assuming yearly seasonality
 FREQ = 'D'  # daily granularity
 META_COLUMNS = 'y|unique_id|ds|cutoff|horizon'
+
+PLOT_THEME = p9.theme_538(base_family='Palatino', base_size=12) + \
+             p9.theme(plot_margin=.025,
+                      panel_background=p9.element_rect(fill='white'),
+                      plot_background=p9.element_rect(fill='white'),
+                      legend_box_background=p9.element_rect(fill='white'),
+                      strip_background=p9.element_rect(fill='white'),
+                      legend_background=p9.element_rect(fill='white'),
+                      axis_text_x=p9.element_text(size=9, angle=0),
+                      axis_text_y=p9.element_text(size=9),
+                      legend_title=p9.element_blank())
 
 TWEEDIE_PARAMS = {'boosting_type': 'gbdt',
                   'lambda_l1': 0,
