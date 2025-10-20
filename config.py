@@ -7,6 +7,7 @@ HORIZON = 14  # two weeks
 N_LAGS = 14  # two weeks
 PERIOD = 365  # 1 year ... assuming yearly seasonality
 FREQ = 'D'  # daily granularity
+META_COLUMNS = 'y|unique_id|ds|cutoff|horizon'
 
 TWEEDIE_PARAMS = {'boosting_type': 'gbdt',
                   'lambda_l1': 0,
