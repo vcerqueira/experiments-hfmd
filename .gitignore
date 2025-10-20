@@ -166,3 +166,4 @@ lightning_logs
 # Custom
 assets/
 src/data_reader.py
+scripts/experiments/_garbage
