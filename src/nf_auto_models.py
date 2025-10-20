@@ -1,3 +1,5 @@
+import copy
+
 from neuralforecast.auto import (AutoNHITS,
                                  AutoMLP,
                                  AutoLSTM,
@@ -8,15 +10,20 @@ from neuralforecast.auto import (AutoNHITS,
 from neuralforecast.losses.pytorch import DistributionLoss, MAE
 
 
-def get_auto_nf_models(horizon, loss: str, rs_n_samples: int):
-    NEED_CPU = ['AutoLSTM', 'AutoKAN', 'AutoMLP',
-                'AutoNHITS', 'AutoTFT', 'AutoPatchTST']
+def get_auto_nf_models(horizon,
+                       loss: str,
+                       rs_n_samples: int,
+                       include_exog_in_config: bool = False):
+    NEED_CPU = ['AutoLSTM',
+                'AutoKAN',
+                'AutoMLP',
+                'AutoNHITS',
+                'AutoPatchTST']
 
     model_cls = {
         'AutoKAN': AutoKAN,
         'AutoMLP': AutoMLP,
         'AutoNHITS': AutoNHITS,
-        # 'AutoTFT': AutoTFT,
         'AutoPatchTST': AutoPatchTST,
         'AutoLSTM': AutoLSTM,
     }
@@ -34,6 +41,9 @@ def get_auto_nf_models(horizon, loss: str, rs_n_samples: int):
             mod.default_config['accelerator'] = 'cpu'
         else:
             mod.default_config['accelerator'] = 'mps'
+
+        if include_exog_in_config:
+            mod.default_config['hist_exog_list'] = ['temperature', 'rainfall', 'humidity']
 
         model_instance = mod(
             loss=loss_inst,
