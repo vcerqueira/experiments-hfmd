@@ -1,50 +1,65 @@
+from pprint import pprint
+
+import numpy as np
 import pandas as pd
 import plotnine as p9
 
-data_dict = {
-    'LGBM-Univariate': 0.5782092504903217,
-    'LGBM-Exogenous': 0.5782932131956504,
-    'NHITS-Univariate': 0.5610176578032522,
-    'NHITS-Exogenous': 0.5634947914768041,
-}
+from neuralforecast.losses.numpy import smape
+from config import PLOT_THEME
 
-# Convert dict to DataFrame and split the keys into model and features
-df_rows = []
-for key, value in data_dict.items():
-    model, features = key.split('-')
-    df_rows.append({
-        'Model': model,
-        'Approach': features,
-        'SMAPE': value
-    })
+cv_uv = pd.read_csv('assets/results/cv.csv')
+cv_exog = pd.read_csv('assets/results/cv_hfmd_nf_poisson_exog.csv')
 
-df = pd.DataFrame(df_rows)
+MODEL_NAMES = ['AutoKAN-P', 'AutoMLP-P', 'AutoNHITS-P', 'AutoPatchTST-P', 'AutoLSTM-P']
+MODEL_NAMES_EX = ['AutoKAN-median', 'AutoMLP-median', 'AutoNHITS-median', 'AutoLSTM-median']
+META_COLS = ['unique_id', 'ds', 'cutoff', 'y']
 
-print(df.to_latex(label='tab:exog', caption='CAPTION'))
+cv_uv = cv_uv[META_COLS + MODEL_NAMES]
+# cv = cv.rename(columns={col: col.replace('-P', '') for col in cv.columns})
+cv_exog = cv_exog[META_COLS + MODEL_NAMES_EX]
+cv_exog = cv_exog.rename(columns={col: col.replace('-median', '') for col in cv_exog.columns})
 
-base_theme = p9.theme_538(base_family='Palatino', base_size=12) + \
-             p9.theme(plot_margin=.025,
-                      panel_background=p9.element_rect(fill='white'),
-                      plot_background=p9.element_rect(fill='white'),
-                      legend_box_background=p9.element_rect(fill='white'),
-                      strip_background=p9.element_rect(fill='white'),
-                      legend_background=p9.element_rect(fill='white'),
-                      axis_text_x=p9.element_text(size=9, angle=0),
-                      axis_text_y=p9.element_text(size=9),
-                      legend_title=p9.element_blank())
+pprint(cv_uv.columns.tolist())
+pprint(cv_exog.columns.tolist())
 
-plot = p9.ggplot(df, mapping=p9.aes(x='Model',
-                                    y='SMAPE', fill='Approach')) + \
+cv = cv_uv.merge(cv_exog.drop(columns=['y']), on=['unique_id', 'ds', 'cutoff'])
+pprint(cv.columns.tolist())
+
+all_models = [c for c in cv.columns if c not in META_COLS]
+
+cv_group = cv.groupby('unique_id')
+
+results_by_series = {}
+for g, df in cv_group:
+    evaluation = {}
+    for model in all_models:
+        # evaluation[model] = rmae(y=df['y'], y_hat1=df[model], y_hat2=df['SNaive'])
+        evaluation[model] = smape(y=df['y'], y_hat=df[model])
+
+    results_by_series[g] = evaluation
+
+results_df = pd.DataFrame(results_by_series).T
+
+err = results_df.mean()
+err['AutoPatchTST'] = np.nan
+
+err_df = err.reset_index()
+err_df.columns = ['model', 'value']
+
+err_df['type'] = err_df['model'].apply(lambda x: 'Univariate' if x.endswith('-P') else 'With exogenous')
+err_df['model'] = err_df['model'].apply(lambda x: x.replace('-P', ''))
+
+err_df.columns = ['Model', 'SMAPE', 'Approach']
+
+plot = p9.ggplot(err_df, mapping=p9.aes(x='Model',
+                                        y='SMAPE',
+                                        fill='Approach')) + \
        p9.geom_bar(stat='identity',
-                   position=p9.position_dodge(width=0.9), width=0.8) + \
+                   position=p9.position_dodge(width=0.9),
+                   width=0.8) + \
        p9.scale_fill_brewer(type='qual', palette='Set2') + \
-       p9.labs(title='',
-               x='',
-               y='SMAPE') + \
-       base_theme + \
-       p9.theme(
-           axis_text_x=p9.element_text(angle=0, size=12),
-           plot_title=p9.element_text(hjust=0.5)
-       )
+       p9.labs(title='', x='', y='SMAPE') + \
+       PLOT_THEME + \
+       p9.theme(axis_text=p9.element_text(size=13))
 
-plot.save('assets/outputs/plot_exog.pdf', width=11, height=7)
+plot.save('assets/outputs/plot_smape_exog.pdf', width=11, height=7)
