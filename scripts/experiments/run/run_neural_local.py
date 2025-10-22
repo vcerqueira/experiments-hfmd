@@ -7,9 +7,7 @@ from config import (FREQ, TEST_SIZE, HORIZON, RESULTS_FILE_PATH)
 
 df = DataReader.load_data(drop_exogenous=True)
 
-models = get_auto_nf_models(horizon=HORIZON,
-                            loss='poisson',
-                            rs_n_samples=10)
+models = get_auto_nf_models(horizon=HORIZON, loss='poisson', rs_n_samples=10)
 
 nf = NeuralForecast(models=models, freq=FREQ)
 
