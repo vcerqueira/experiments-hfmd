@@ -35,7 +35,7 @@ To install the required dependencies, run `pip install -r requirements.txt`
 
 The following figure shows the SMAPE across different forecasting models:
 
-![Model Performance Comparison](./assets/outputs/results_main.png)
+![Model Performance Comparison](scripts/results_main.png)
 
 AutoNHITS, using a Poisson based objective functions, performs best overall
 
