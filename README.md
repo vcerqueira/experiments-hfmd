@@ -33,8 +33,9 @@ To install the required dependencies, run `pip install -r requirements.txt`
 
 ## Results
 
-The following figure shows the SMAPE (Symmetric Mean Absolute Percentage Error) across different forecasting models:
+The following figure shows the SMAPE across different forecasting models:
 
-![Model Performance Comparison](assets/outputs/plot_smape_dists.pdf)
+![Model Performance Comparison](assets/outputs/results_main.png)
 
+AutoNHITS, using a Poisson based objective functions, performs best overall
 
